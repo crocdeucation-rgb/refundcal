@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>해지 정산 계산기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    padding: 20px;
+    color: #1a1a2e;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .header {
+    background: #0D1B3E;
+    color: white;
+    padding: 24px;
+    border-radius: 16px 16px 0 0;
+    margin-bottom: 2px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .header p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 4px;
+  }
+
+  .card {
+    background: white;
+    padding: 24px;
+    margin-bottom: 2px;
+  }
+
+  .card:last-of-type {
+    border-radius: 0 0 16px 16px;
+    margin-bottom: 0;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #E8A020;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f0f2f5;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-row.single { grid-template-columns: 1fr; }
+  .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 6px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #1a1a2e;
+    transition: border-color 0.2s;
+    background: white;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #0D1B3E;
+  }
+
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+  }
+
+  .checkbox-item:hover { border-color: #0D1B3E; background: #f8f9ff; }
+  .checkbox-item.checked { border-color: #0D1B3E; background: #f0f3ff; }
+  .checkbox-item.always { border-color: #E8A020; background: #fff8f0; }
+  .checkbox-item.always.checked { background: #fff0d0; }
+
+  .checkbox-item input[type="checkbox"] { display: none; }
+
+  .check-box {
+    width: 18px; height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .checked .check-box { background: #0D1B3E; border-color: #0D1B3E; }
+  .always .check-box { border-color: #E8A020; }
+  .always.checked .check-box { background: #E8A020; border-color: #E8A020; }
+
+  .check-box::after {
+    content: '✓';
+    color: white;
+    font-size: 11px;
+    display: none;
+  }
+  .checked .check-box::after { display: block; }
+
+  .item-label { flex: 1; }
+  .item-price { font-size: 12px; color: #999; white-space: nowrap; }
+
+  .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .badge.always { background: #fff0d0; color: #E8A020; }
+  .badge.conditional { background: #e8f0ff; color: #0D1B3E; }
+
+  .calc-btn {
+    width: 100%;
+    padding: 16px;
+    background: #0D1B3E;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+    letter-spacing: -0.3px;
+  }
+
+  .calc-btn:hover { background: #1a2f5e; transform: translateY(-1px); }
+  .calc-btn:active { transform: translateY(0); }
+
+  .result-card {
+    background: #0D1B3E;
+    color: white;
+    padding: 24px;
+    border-radius: 16px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .result-card.show { display: block; }
+
+  .result-title {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 14px;
+  }
+
+  .result-row:last-of-type { border-bottom: none; }
+  .result-row.somelted { color: rgba(255,255,255,0.4); text-decoration: line-through; }
+  .result-row.total { font-size: 18px; font-weight: 700; margin-top: 8px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.3); }
+  .result-row.refund { color: #4CAF50; font-weight: 700; }
+
+  .amount { font-weight: 600; }
+
+  .message-box {
+    background: #f8f9ff;
+    border: 1.5px solid #e0e4ff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    color: #1a1a2e;
+    display: none;
+  }
+
+  .message-box.show { display: block; }
+
+  .copy-btn {
+    width: 100%;
+    padding: 12px;
+    background: #E8A020;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+    display: none;
+  }
+
+  .copy-btn.show { display: block; }
+  .copy-btn:hover { background: #d4911a; }
+
+  .info-chip {
+    display: inline-block;
+    background: #f0f2f5;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .form-row { grid-template-columns: 1fr; }
+    .form-row.triple { grid-template-columns: 1fr 1fr; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>해지 정산 계산기</h1>
+    <p>아라온스쿨 내부용</p>
+  </div>
+
+  <!-- 기본 정보 -->
+  <div class="card">
+    <div class="section-title">기본 정보</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>수업 시작일</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="form-group">
+        <label>해지 요청일</label>
+        <input type="date" id="endDate">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>최초 결제금액 (원)</label>
+        <input type="number" id="totalPaid" placeholder="3468000">
+      </div>
+      <div class="form-group">
+        <label>학습 준수기간</label>
+        <select id="minPeriod">
+          <option value="6">6개월</option>
+          <option value="8">8개월</option>
+          <option value="9">9개월</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>어머님/아버님 성함</label>
+        <input type="text" id="parentName" placeholder="홍길동">
+      </div>
+      <div class="form-group">
+        <label>학생 이름</label>
+        <input type="text" id="studentName" placeholder="홍길순">
+      </div>
+    </div>
+  </div>
+
+  <!-- 수업 구성 -->
+  <div class="card">
+    <div class="section-title">수업 구성</div>
+    <div class="form-row triple">
+      <div class="form-group">
+        <label>추가 과목 수</label>
+        <select id="extraSubjects">
+          <option value="0">없음</option>
+          <option value="1">1과목 (+5만/월)</option>
+          <option value="2">2과목 (+10만/월)</option>
+          <option value="3">3과목 (+15만/월)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>GT 멤버십</label>
+        <select id="gtMembership">
+          <option value="0">없음</option>
+          <option value="300000">Basic 6개월 (30만)</option>
+          <option value="600000_basic">Basic 12개월 (60만)</option>
+          <option value="600000_pro">Pro 6개월 (60만)</option>
+          <option value="1200000">Pro 12개월 (120만)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>올패스ID</label>
+        <select id="olpass">
+          <option value="1">포함 (10만/월)</option>
+          <option value="0">없음</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사은품 -->
+  <div class="card">
+    <div class="section-title">사은품 선택</div>
+    <p style="font-size:12px;color:#999;margin-bottom:12px;">
+      <span style="color:#E8A020;font-weight:600;">주황색</span> = 준수기간 관계없이 항상 청구 &nbsp;|&nbsp; 
+      <span style="color:#0D1B3E;font-weight:600;">파란색</span> = 준수기간 충족시 소멸
+    </p>
+    <div class="checkbox-grid" id="giftGrid"></div>
+
+    <!-- 3Q 별도 -->
+    <div style="margin-top:12px;">
+      <div class="checkbox-item" id="item3q" onclick="toggle3Q()" style="border-color:#e0e0e0;">
+        <input type="checkbox" id="check3q">
+        <div class="check-box" id="box3q"></div>
+        <div class="item-label">
+          3Q 인적성검사
+          <div style="margin-top:2px;">
+            <span class="badge conditional">조건부</span>
+          </div>
+        </div>
+        <div class="item-price">80,000원</div>
+      </div>
+      <p style="font-size:11px;color:#999;margin-top:6px;padding-left:4px;">준수기간 전 해지 또는 사용시 청구 / 준수기간 후 미사용시 소멸</p>
+      <div style="margin-top:8px;display:none;" id="q3UsedRow">
+        <label style="font-size:13px;color:#666;display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="q3Used" style="width:16px;height:16px;"> 3Q 검사 사용했음
+        </label>
+      </div>
+    </div>
+
+    <!-- 타인강 위약금 -->
+    <div style="margin-top:12px;">
+      <div class="checkbox-item" id="itemTainkang" onclick="toggleTainkang()">
+        <input type="checkbox" id="checkTainkang">
+        <div class="check-box" id="boxTainkang"></div>
+        <div class="item-label">타인강 위약금 <span class="badge conditional">소멸가능</span></div>
+      </div>
+      <div style="margin-top:8px;display:none;" id="tainkangAmountRow">
+        <div class="form-group">
+          <label>위약금 금액 (원)</label>
+          <input type="number" id="tainkangAmount" placeholder="220000">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 계산 버튼 -->
+  <div class="card" style="border-radius:0 0 16px 16px;">
+    <button class="calc-btn" onclick="calculate()">정산 계산하기</button>
+  </div>
+
+  <!-- 결과 -->
+  <div class="result-card" id="resultCard">
+    <div class="result-title" id="resultTitle"></div>
+    <div id="resultRows"></div>
+  </div>
+
+  <!-- 카톡 메시지 -->
+  <div class="message-box" id="messageBox"></div>
+  <button class="copy-btn" id="copyBtn" onclick="copyMessage()">카톡 메시지 복사하기</button>
+</div>
+
+<script>
+const gifts = [
+  { id: 'gtNote_old', label: '(구) GT미니노트', price: 18000, always: true },
+  { id: 'gtNote2025', label: '2025GT노트', price: 20000, always: true },
+  { id: 'gtMiniNote2025', label: '2025GT미니노트', price: 20000, always: true },
+  { id: 'airpods4', label: '애플 AirPods 4', price: 199000, always: false },
+  { id: 'airpodsPro3', label: '애플 AirPods Pro 3', price: 369000, always: false },
+  { id: 'printer', label: '삼성레이저 프린터 wifi', price: 265000, always: false },
+  { id: 'notebook14', label: '베이직북14 3세대', price: 499000, always: false },
+  { id: 'notebook16', label: '베이직북16', price: 599000, always: false },
+  { id: 'headset35', label: '헤드셋 3.5잭', price: 15000, always: false },
+  { id: 'headsetUSB', label: '헤드셋 USB잭', price: 25000, always: false },
+  { id: 'cam', label: '캠', price: 30000, always: false },
+  { id: 'galaxyi3', label: '삼성 i3 갤럭시북4', price: 990000, always: false },
+  { id: 'galaxyi5', label: '삼성 i5 갤럭시북4', price: 1190000, always: false },
+  { id: 'wacom', label: '와콤 태블릿', price: 59000, always: false },
+  { id: 'wacomBT', label: '와콤 태블릿 블루투스', price: 109000, always: false },
+  { id: 'inkjet', label: '삼성잉크젯복합기', price: 85000, always: false },
+];
+
+// 그리드 생성
+const grid = document.getElementById('giftGrid');
+gifts.forEach(g => {
+  const div = document.createElement('div');
+  div.className = `checkbox-item ${g.always ? 'always' : ''}`;
+  div.id = `item_${g.id}`;
+  div.onclick = () => toggleGift(g.id, g.always);
+  div.innerHTML = `
+    <input type="checkbox" id="check_${g.id}">
+    <div class="check-box" id="box_${g.id}"></div>
+    <div class="item-label">
+      ${g.label}
+      <div style="margin-top:2px;"><span class="badge ${g.always ? 'always' : 'conditional'}">${g.always ? '항상청구' : '준수후소멸'}</span></div>
+    </div>
+    <div class="item-price">${g.price.toLocaleString()}원</div>
+  `;
+  grid.appendChild(div);
+});
+
+function toggleGift(id, always) {
+  const item = document.getElementById(`item_${id}`);
+  const box = document.getElementById(`box_${id}`);
+  const check = document.getElementById(`check_${id}`);
+  check.checked = !check.checked;
+  item.classList.toggle('checked');
+}
+
+function toggle3Q() {
+  const item = document.getElementById('item3q');
+  const check = document.getElementById('check3q');
+  check.checked = !check.checked;
+  item.classList.toggle('checked');
+  document.getElementById('q3UsedRow').style.display = check.checked ? 'block' : 'none';
+}
+
+function toggleTainkang() {
+  const item = document.getElementById('itemTainkang');
+  const check = document.getElementById('checkTainkang');
+  check.checked = !check.checked;
+  item.classList.toggle('checked');
+  document.getElementById('tainkangAmountRow').style.display = check.checked ? 'block' : 'none';
+}
+
+function getMonths(start, end) {
+  const s = new Date(start);
+  const e = new Date(end);
+  let months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+  if (e.getDate() >= s.getDate()) months += 1;
+  return Math.max(1, months);
+}
+
+function calculate() {
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+  const totalPaid = parseInt(document.getElementById('totalPaid').value) || 0;
+  const minPeriod = parseInt(document.getElementById('minPeriod').value);
+  const parentName = document.getElementById('parentName').value || '어머님';
+  const studentName = document.getElementById('studentName').value || '';
+  const extraSubjects = parseInt(document.getElementById('extraSubjects').value);
+  const gtVal = document.getElementById('gtMembership').value;
+  const olpass = parseInt(document.getElementById('olpass').value);
+
+  if (!startDate || !endDate) { alert('시작일과 해지일을 입력해주세요.'); return; }
+
+  const months = getMonths(startDate, endDate);
+  const periodMet = months > minPeriod;
+
+  // 정산 항목 계산
+  let rows = [];
+  let total = 0;
+
+  // 수업료
+  const tuition = 289000 * months;
+  rows.push({ label: `수업료 289,000 x ${months}개월`, amount: tuition, melted: false });
+  total += tuition;
+
+  // 올패스ID
+  if (olpass === 1) {
+    if (periodMet) {
+      rows.push({ label: `올패스ID 100,000 x ${months}개월`, amount: 100000 * months, melted: true, reason: '준수기간 충족 소멸' });
+    } else {
+      const olpassAmt = 100000 * months;
+      rows.push({ label: `올패스ID 100,000 x ${months}개월`, amount: olpassAmt, melted: false });
+      total += olpassAmt;
+    }
+  }
+
+  // 추가 과목
+  if (extraSubjects > 0) {
+    const subjectAmt = 50000 * extraSubjects * months;
+    rows.push({ label: `추가 과목 ${extraSubjects}과목 x ${months}개월`, amount: subjectAmt, melted: false });
+    total += subjectAmt;
+  }
+
+  // GT 멤버십
+  if (gtVal !== '0') {
+    let gtAmt = 0;
+    let gtLabel = '';
+    if (gtVal === '300000') { gtAmt = 300000; gtLabel = 'GT Basic 6개월'; }
+    else if (gtVal === '600000_basic') { gtAmt = 600000; gtLabel = 'GT Basic 12개월'; }
+    else if (gtVal === '600000_pro') { gtAmt = 600000; gtLabel = 'GT Pro 6개월'; }
+    else if (gtVal === '1200000') { gtAmt = 1200000; gtLabel = 'GT Pro 12개월'; }
+    rows.push({ label: gtLabel, amount: gtAmt, melted: false });
+    total += gtAmt;
+  }
+
+  // 사은품
+  gifts.forEach(g => {
+    const checked = document.getElementById(`check_${g.id}`).checked;
+    if (!checked) return;
+    if (g.always) {
+      rows.push({ label: g.label, amount: g.price, melted: false });
+      total += g.price;
+    } else {
+      if (periodMet) {
+        rows.push({ label: g.label, amount: g.price, melted: true, reason: '준수기간 충족 소멸' });
+      } else {
+        rows.push({ label: g.label, amount: g.price, melted: false });
+        total += g.price;
+      }
+    }
+  });
+
+  // 3Q
+  const q3Checked = document.getElementById('check3q').checked;
+  if (q3Checked) {
+    const q3Used = document.getElementById('q3Used').checked;
+    if (!periodMet || q3Used) {
+      rows.push({ label: '3Q 인적성검사', amount: 80000, melted: false });
+      total += 80000;
+    } else {
+      rows.push({ label: '3Q 인적성검사', amount: 80000, melted: true, reason: '준수기간 충족 + 미사용 소멸' });
+    }
+  }
+
+  // 타인강 위약금
+  const tainkangChecked = document.getElementById('checkTainkang').checked;
+  if (tainkangChecked) {
+    const tainkangAmt = parseInt(document.getElementById('tainkangAmount').value) || 0;
+    if (periodMet) {
+      rows.push({ label: '타인강 위약금', amount: tainkangAmt, melted: true, reason: '준수기간 충족 소멸' });
+    } else {
+      rows.push({ label: '타인강 위약금', amount: tainkangAmt, melted: false });
+      total += tainkangAmt;
+    }
+  }
+
+  // 결과 표시
+  const resultCard = document.getElementById('resultCard');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultRows = document.getElementById('resultRows');
+
+  resultTitle.textContent = `${months}개월 해지 정산 결과 ${periodMet ? '✓ 준수기간 충족' : '⚠ 준수기간 미충족'}`;
+  
+  let html = '';
+  rows.forEach(r => {
+    html += `<div class="result-row ${r.melted ? 'somelted' : ''}">
+      <span>${r.label}${r.melted ? ` <small>(${r.reason})</small>` : ''}</span>
+      <span class="amount">${r.amount.toLocaleString()}원</span>
+    </div>`;
+  });
+
+  html += `<div class="result-row total"><span>정산 합계</span><span>${total.toLocaleString()}원</span></div>`;
+
+  if (totalPaid > 0) {
+    const diff = totalPaid - total;
+    if (diff > 0) {
+      html += `<div class="result-row refund"><span>환불 예정액</span><span>${diff.toLocaleString()}원</span></div>`;
+    } else if (diff < 0) {
+      html += `<div class="result-row" style="color:#ff6b6b;font-weight:700;"><span>추가 납부액</span><span>${Math.abs(diff).toLocaleString()}원</span></div>`;
+    }
+  }
+
+  resultRows.innerHTML = html;
+  resultCard.classList.add('show');
+
+  // 카톡 메시지 생성
+  const meltedItems = rows.filter(r => r.melted).map(r => r.label);
+  const chargedItems = rows.filter(r => !r.melted);
+
+  let msg = `안녕하세요 ${studentName ? studentName + ' ' : ''}${parentName}, 해지 내용 정리해서 드려요.\n\n`;
+  msg += `저희가 월단위로 정산이 들어가서 수업월수는 ${months}개월로 처리됩니다.\n\n`;
+  msg += `<${months}개월 해지시>\n`;
+  chargedItems.forEach(r => {
+    msg += `${r.label} = ${r.amount.toLocaleString()}원\n`;
+  });
+  if (meltedItems.length > 0) {
+    msg += `${meltedItems.join(', ')} - 소멸\n`;
+  }
+  msg += `\n총 ${total.toLocaleString()}원입니다.\n\n`;
+  msg += `취소 절차 안내드릴게요.\n`;
+  msg += `최초결제를 ${totalPaid.toLocaleString()}원 무이자할부로 해주셨어요.\n\n`;
+  
+  if (totalPaid > total) {
+    msg += `위 수업료를 현금으로 입금하거나 카드로 일시불 결제를 진행하시면 저희가 카드 전체취소를 해드립니다.\n`;
+    msg += `취소 요청 후 7-8일 이후 카드가 취소되면 그동안 나간 할부금 등이 모두 환불됩니다.`;
+  } else if (totalPaid <= total) {
+    msg += `정산금액이 최초결제금액과 동일하거나 초과하여 별도 환불 없이 처리됩니다.`;
+  }
+
+  document.getElementById('messageBox').textContent = msg;
+  document.getElementById('messageBox').classList.add('show');
+  document.getElementById('copyBtn').classList.add('show');
+
+  resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyMessage() {
+  const msg = document.getElementById('messageBox').textContent;
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '복사 완료!';
+    setTimeout(() => btn.textContent = '카톡 메시지 복사하기', 2000);
+  });
+}
+</script>
+</body>
+</html>
