@@ -588,14 +588,7 @@ function calculate() {
 
   html += `<div class="result-row total"><span>정산 합계</span><span>${total.toLocaleString()}원</span></div>`;
 
-  if (totalPaid > 0) {
-    const diff = totalPaid - total;
-    if (diff > 0) {
-      html += `<div class="result-row refund"><span>환불 예정액</span><span>${diff.toLocaleString()}원</span></div>`;
-    } else if (diff < 0) {
-      html += `<div class="result-row" style="color:#ff6b6b;font-weight:700;"><span>추가 납부액</span><span>${Math.abs(diff).toLocaleString()}원</span></div>`;
-    }
-  }
+
 
   resultRows.innerHTML = html;
   resultCard.classList.add('show');
