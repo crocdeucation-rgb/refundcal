@@ -518,15 +518,16 @@ function calculate() {
     total += subjectAmt;
   }
 
-  // GT 멤버십
+  // GT 멤버십 (월단위 계산)
   if (gtVal !== '0') {
-    let gtAmt = 0;
+    let gtMonthly = 0;
     let gtLabel = '';
-    if (gtVal === '300000') { gtAmt = 300000; gtLabel = 'GT Basic 6개월'; }
-    else if (gtVal === '600000_basic') { gtAmt = 600000; gtLabel = 'GT Basic 12개월'; }
-    else if (gtVal === '600000_pro') { gtAmt = 600000; gtLabel = 'GT Pro 6개월'; }
-    else if (gtVal === '1200000') { gtAmt = 1200000; gtLabel = 'GT Pro 12개월'; }
-    rows.push({ label: gtLabel, amount: gtAmt, melted: false });
+    if (gtVal === '300000') { gtMonthly = 50000; gtLabel = 'GT Basic'; }
+    else if (gtVal === '600000_basic') { gtMonthly = 50000; gtLabel = 'GT Basic'; }
+    else if (gtVal === '600000_pro') { gtMonthly = 100000; gtLabel = 'GT Pro'; }
+    else if (gtVal === '1200000') { gtMonthly = 100000; gtLabel = 'GT Pro'; }
+    const gtAmt = gtMonthly * months;
+    rows.push({ label: `${gtLabel} 코칭 ${gtMonthly.toLocaleString()} x ${months}개월`, amount: gtAmt, melted: false });
     total += gtAmt;
   }
 
